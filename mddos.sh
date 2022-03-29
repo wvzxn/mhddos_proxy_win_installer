@@ -1,4 +1,5 @@
 #!/bin/bash
+cd
 cd ./Desktop/mhddos-proxy-py
 checkfolder () {
     if [ -d ./mhddos_proxy ]; then
@@ -12,5 +13,5 @@ checkfolder () {
     fi
 }
 checkfolder
-source <(curl -s https://raw.githubusercontent.com/wazxn/ddos-help-bat/main/target)
+source <(curl -s https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/command)
 exit

