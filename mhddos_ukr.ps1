@@ -84,8 +84,8 @@ Write-Output "Запланувати завершення роботи програми? ` [Enter], [Y] - Так" ; $k
 if ($key -eq "Y" -or $key -eq "Enter") {
     [int]$h = Read-Host "Вкажіть кількість годин" ; [int]$m = Read-Host "Вкажіть кількість хвилин"
     $h = $h*3600 ; $m = $m*60 ; $time = $h + $m
-    Write-Output "По завершенню роботи виключити комп*ютер ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
-    if ($key -eq "Y" -or $key -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
+    Write-Output "По завершенню роботи виключити комп*ютер ` [Enter], [Y] - Так" ; $keys = [Console]::ReadKey($true).Key
+    if ($keys -eq "Y" -or $keys -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
 }
 Clear-Host ; Write-Output "В новому вікні вставте й запустіть команду [ПКМ] і [Enter]" ; Start-Sleep -s 5 ; Clear-Host
 Write-Output "--------------- Дудос Починається ---------------"
