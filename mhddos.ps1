@@ -10,7 +10,7 @@ if ($PSold -eq $true) {
 } else {$OS64bit = [System.Environment]::Is64BitOperatingSystem}
 # Write-Output "OS = $OS | PSold = $PSold | OS64bit = $OS64bit"
 $root = "$env:userprofile\Desktop\mhddos-proxy-py"
-$mhddos_bash_clipboard = "https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/mddos.sh"
+$mhddos_bash_clipboard = "https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/mhddos.sh"
 
 #   ------------------------- function-block ------------------------
 function CheckDownloadInstall {
@@ -84,14 +84,16 @@ Write-Output "Add program working time? ` [Enter], [Y] - Yes" ; $key = [Console]
 if ($key -eq "Y" -or $key -eq "Enter") {
     [int]$h = Read-Host "Hours" ; [int]$m = Read-Host "Minutes"
     $h = $h*3600 ; $m = $m*60 ; $time = $h + $m
-    Write-Output "Shutdown PC after program exit? ` [Enter], [Y] - Yes" ; $key = [Console]::ReadKey($true).Key
-    if ($key -eq "Y" -or $key -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
+    Write-Output "Shutdown PC after program exit? ` [Enter], [Y] - Yes" ; $keys = [Console]::ReadKey($true).Key
+    if ($keys -eq "Y" -or $keys -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
 }
-Clear-Host ; Write-Output "--------------- Starting mhddos [CJIABA YKPAiHi] ---------------"
+Clear-Host ; Write-Output "In a new window press [Mouse Right Button] and [Enter]" ; Start-Sleep -s 5 ; Clear-Host
+Write-Output "--------------- Starting mhddos [CJIABA YKPAiHi] [rEPO9M CJIABA] [Glory to Ukraine] [Glory to the Heroes] ---------------"
 Set-Clipboard -Value "source <(curl -s $mhddos_bash_clipboard)"
-Start-Process -filepath "$env:programfiles\Git\git-bash.exe" -Wait
+Start-Process -filepath "$env:programfiles\Git\git-bash.exe"
 if ($key -eq "Y" -or $key -eq "Enter") {
-    $now = (get-date) ; $future = (get-date).AddSeconds($time) ; Write-Output "Job start: $now" ` "Job end: $future" ; Start-Sleep -s $time
+    $now = (get-date) ; $future = (get-date).AddSeconds($time)
+    Write-Output "Job start: $now" ` "Job end: $future" ; Start-Sleep -s $time
     get-process | where-object {$_.MainWindowTitle -like "*c/Users*"} | stop-process
     if ($Shutdown -eq $true) {Stop-Computer -ComputerName localhost}
 }
