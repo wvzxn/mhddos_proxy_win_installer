@@ -87,8 +87,9 @@ if ($key -eq "Y" -or $key -eq "Enter") {
     Write-Output "Shutdown PC after program exit? ` [Enter], [Y] - Yes" ; $keys = [Console]::ReadKey($true).Key
     if ($keys -eq "Y" -or $keys -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
 }
-Clear-Host ; Write-Output "In a new window press [Mouse Right Button] and [Enter]" ; Start-Sleep -s 5 ; Clear-Host
-Write-Output "--------------- Starting mhddos [CJIABA YKPAiHi] [rEPO9M CJIABA] [Glory to Ukraine] [Glory to the Heroes] ---------------"
+Clear-Host ; Write-Output "!!!!---- In a new window press [Mouse Right Button] and [Enter] ----!!!!"
+Start-Sleep -s 8 ; Clear-Host
+Write-Output "--------- Starting mhddos [CJIABA YKPAiHi] [rEPO9M CJIABA] [Glory to Ukraine] [Glory to the Heroes] ---------"
 Set-Clipboard -Value "source <(curl -s $mhddos_bash_clipboard)"
 Start-Process -filepath "$env:programfiles\Git\git-bash.exe"
 if ($key -eq "Y" -or $key -eq "Enter") {

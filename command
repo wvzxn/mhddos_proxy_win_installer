@@ -1,1 +1,1 @@
-python runner.py 195.42.165.13:80 195.42.165.13:443 185.137.235.138:80 185.137.235.138:443 82.202.251.98:80 82.202.251.98:443 --http-methods GET POST STRESS BOT PPS -t 1000 --debug
+python runner.py -c https://raw.githubusercontent.com/OleksandrBlack/ddoswarlist/main/layer4.lst -t 1000 -p 350 --rpc 1000 --debug 

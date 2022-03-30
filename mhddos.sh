@@ -13,5 +13,5 @@ checkfolder () {
     fi
 }
 checkfolder
-source <(curl -s https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/command)
+if [ "`arch`" = "x86_64" ]; then source <(curl -s https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/command); else source <(curl -s https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/command3); fi
 exit
