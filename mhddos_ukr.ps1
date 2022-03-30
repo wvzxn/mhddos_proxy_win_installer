@@ -10,7 +10,7 @@ if ($PSold -eq $true) {
 } else {$OS64bit = [System.Environment]::Is64BitOperatingSystem}
 # Write-Output "OS = $OS | PSold = $PSold | OS64bit = $OS64bit"
 $root = "$env:userprofile\Desktop\mhddos-proxy-py"
-$mhddos_bash_clipboard = "https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/mddos.sh"
+$mhddos_bash_clipboard = "https://raw.githubusercontent.com/wazxn/mhddos-proxy-py/main/mhddos.sh"
 
 #   ------------------------- function-block ------------------------
 function CheckDownloadInstall {
