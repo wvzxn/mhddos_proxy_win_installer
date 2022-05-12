@@ -9,9 +9,12 @@ Get-ExecutionPolicy -List
 
 echo "press any key..." ; [void][Console]::ReadKey($true).Key
 
-# (New-Object Net.WebClient).DownloadFile("https://dl2.repack.me/files/VCR_Hyb_x86_x64_09.04.2022.zip","$env:userprofile\Desktop\vcr.zip")
-# & "$env:userprofile\Desktop\7za.exe" e -y "-prepack.me" "vcr.zip"
+Update-Help -force -erroraction silentlycontinue
 
+# (New-Object System.Net.WebClient).DownloadFile("https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/vcr.zip","$env:userprofile\Desktop\vcr.zip")
+# & "$env:userprofile\Desktop\7za.exe" e -y "-pwz" "vcr.zip"
+
+echo "press any key..." ; [void][Console]::ReadKey($true).Key
 
 exit
 
