@@ -1,1 +1,0 @@
-python3 runner.py -c https://raw.githubusercontent.com/OleksandrBlack/ddoswarlist/main/layer4.lst -t 1000 -p 350 --rpc 1000 --debug 
