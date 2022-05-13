@@ -9,7 +9,7 @@ if "%VERSION%" == "5.0" set "w=Windows 2000"
 if "%VERSION%" == "5.1" set "w=Windows XP"
 if "%VERSION%" == "5.2" set "w=Windows Server 2003"
 if "%VERSION%" == "6.0" set "w=Windows Vista"
-echo Your %w% is unsupported
+echo Your %w% is not supported
 pause
 goto end
 
