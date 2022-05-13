@@ -33,12 +33,12 @@ Register-ObjectEvent -InputObject $wc -EventName DownloadFileCompleted -Action {
     Write-Host
 } > $null
 
-$wc.DownloadFileAsync("https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/vcr.zip","$env:userprofile\Desktop\vcr.zip");
+$wc.DownloadFileAsync("https://github.com/wvzxn/mhddos-proxy-py/raw/main/vcr/vcr.zip","$env:userprofile\Desktop\vcr.zip");
 # ps script runs probably in one thread only (event is reised in same thread - blocking problems)
 # $global:are.WaitOne() not work
 while(!$global:are.WaitOne(500)) {}
 
-# (New-Object System.Net.WebClient).DownloadFile("https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/vcr.zip","$env:userprofile\Desktop\vcr.zip")
+# (New-Object System.Net.WebClient).DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/vcr/vcr.zip","$env:userprofile\Desktop\vcr.zip")
 # & "$env:userprofile\Desktop\7za.exe" e -y "-pwz" "vcr.zip"
 
 echo "press any key..." ; [void][Console]::ReadKey($true).Key
