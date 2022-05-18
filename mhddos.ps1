@@ -14,7 +14,7 @@ $folder = "$env:tmp\mhddos-temp"
 
 $WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.dll","$folder\7z.dll")
 $WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.exe","$folder\7z.exe")
-$WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/vcr/vcr.zip","$folder\vcr.zip")
+$WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/vcr.zip","$folder\vcr.zip")
 & "$folder\7z.exe" e -y "-pwz" "vcr.zip"
 
 echo "натисніть ...." ; [void][Console]::ReadKey($true).Key
