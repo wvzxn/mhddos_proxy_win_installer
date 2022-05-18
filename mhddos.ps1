@@ -1,19 +1,23 @@
 # ------------------------- Settings ------------------------
-[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 [Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding("cp866")
-[double]$OS = ([string][System.Environment]::OSVersion.Version.Major) + "." + ([string][System.Environment]::OSVersion.Version.Minor)
-if ((Get-WmiObject win32_operatingsystem).osarchitecture -like "*64*") {$OS64bit = $true} else {$OS64bit = $false}
-Write-Output "OS = $OS | PSold = $PSold | OS64bit = $OS64bit"
-# Get-ExecutionPolicy -List
-
-# if ($PSVersionTable.PSVersion.Major -lt 5) {Update-Help -force -erroraction silentlycontinue}
+[double]$_OS = ([string][System.Environment]::OSVersion.Version.Major) + "." + ([string][System.Environment]::OSVersion.Version.Minor)
+if ((Get-WmiObject win32_operatingsystem).osarchitecture -like "*64*") {$_OS64bit = $true} else {$_OS64bit = $false}
+# Write-Output "OS = $OS | PSold = $PSold | OS64bit = $OS64bit"
 echo "натисніть ...." ; [void][Console]::ReadKey($true).Key
+# -----------------------------------------------------------
 
-# (New-Object System.Net.WebClient).DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/vcr/vcr.zip","$env:userprofile\Desktop\vcr.zip")
-# & "$env:userprofile\Desktop\7za.exe" e -y "-pwz" "vcr.zip"
+$WC = New-Object System.Net.WebClient
 
-echo "press any key..." ; [void][Console]::ReadKey($true).Key
+$folder = "$env:tmp\mhddos-temp"
 
+# -----------------------------------------------------------
+
+$WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.dll","$folder\7z.dll")
+$WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.exe","$folder\7z.exe")
+$WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/vcr/vcr.zip","$folder\vcr.zip")
+& "$folder\7z.exe" e -y "-pwz" "vcr.zip"
+
+echo "натисніть ...." ; [void][Console]::ReadKey($true).Key
 exit
 
 <#
