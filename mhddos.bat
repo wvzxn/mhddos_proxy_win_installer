@@ -3,7 +3,7 @@ if not "%1"=="am_admin" ( powershell start -verb runas '%0' 'am_admin "%~1" "%~2
 call:REG_autorun_del
 call:REG_lowrisk_del
 set "_PS1_COMMAND=[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; cls; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/mhddos.ps1'))"
-:: set "_PS1_COMMAND=Invoke-Command -FilePath '%~dp0\mhddos.ps1'"
+:: set "_PS1_COMMAND=& '%~dp0mhddos.ps1'"
 :: ----------------------------------------------------------------------------------------------------------------------------------
 :start
 :: Old [Windows] check
@@ -73,7 +73,7 @@ call:.NETsetup_WebClient
 if not exist "%folder%\ndp452.exe" echo Retrying connection to Microsoft Server... & goto:.NETsetup_download
 echo // Installing . . .
 powershell -executionpolicy bypass -command "Start-Process -FilePath '%folder%\ndp452.exe' -Wait -ArgumentList '/q /norestart'"
-echo // done!
+echo // done !
 timeout 5 >nul
 exit /b 0
 
@@ -97,9 +97,10 @@ call:mkdir-temp
 if %PROCESSOR_ARCHITECTURE% EQU x86 ( call:PWSHsetup_WebClient_x86 ) else ( call:PWSHsetup_WebClient )
 :: Retry connection
 if not exist "%folder%\wmn3.msu" echo Retrying connection to Microsoft Server... & goto:PWSHsetup_download
-echo // Installing . . .
 call:REG_lowrisk
 call:REG_autorun
+cls
+echo // Installing ^[Windows Management Framework 3.0^] . . .
 powershell -executionpolicy bypass -command "Start-Process -FilePath '%folder%\wmn3.msu' -Wait -ArgumentList '/quiet /warnrestart'"
 echo // done !
 timeout 5 >nul
