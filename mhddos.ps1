@@ -1,12 +1,16 @@
 # ------------------------- Settings ------------------------
-# [Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding("cp866")
 # [double]$_OS = ([string][System.Environment]::OSVersion.Version.Major) + "." + ([string][System.Environment]::OSVersion.Version.Minor)
 # if ((Get-WmiObject win32_operatingsystem).osarchitecture -like "*64*") {$_OS64bit = $true} else {$_OS64bit = $false}
-# Write-Output "OS = $OS | PSold = $PSold | OS64bit = $OS64bit"
-# echo "натисніть ...." ; [void][Console]::ReadKey($true).Key
+# Write-Output "OS = $OS | OS64bit = $OS64bit"
 # -----------------------------------------------------------
 
-$WC = New-Object System.Net.WebClient
+Function Pause ($Message = "Press any key to continue . . . ") {
+    Write-Host -NoNewline $Message
+    [void][System.Console]::ReadKey($true)
+    Write-Host
+}
+
+New-Alias -Name "WC" -Value "New-Object System.Net.WebClient"
 
 $folder = "$env:tmp\mhddos-temp"
 
@@ -15,9 +19,9 @@ function Add-AddonsFolder {
         [string]$fldr
     )
     New-Item -Path "$fldr\addons" -Type Folder
-    $WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.dll","$fldr\addons\7z.dll")
-    $WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.exe","$fldr\addons\7z.exe")
-    $WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/vcr.zip","$fldr\addons\vcr.zip")
+    WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.dll","$fldr\addons\7z.dll")
+    WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.exe","$fldr\addons\7z.exe")
+    WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/vcr.zip","$fldr\addons\vcr.zip")
 }
 function Set-VCR {
     param (
@@ -30,8 +34,9 @@ function Set-VCR {
     Start-Process -FilePath "$fldr\addons\7z.exe" -ArgumentList "e -y "-pwz" "$fldr\addons\vcr.zip""
 }
 # -----------------------------------------------------------
-Set-VCR "$folder"
-echo "натисніть ...." ; [void][Console]::ReadKey($true).Key
+# Set-VCR "$folder"
+Write-Output "Press Enter" ; [void][Console]::ReadKey($true).Key
+Pause
 exit
 
 <#
