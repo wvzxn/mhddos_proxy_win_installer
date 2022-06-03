@@ -1,54 +1,48 @@
-# ------------------------- Settings ------------------------
-# [double]$_OS = ([string][System.Environment]::OSVersion.Version.Major) + "." + ([string][System.Environment]::OSVersion.Version.Minor)
-# if ((Get-WmiObject win32_operatingsystem).osarchitecture -like "*64*") {$_OS64bit = $true} else {$_OS64bit = $false}
-# Write-Output "OS = $OS | OS64bit = $OS64bit"
-# -----------------------------------------------------------
-
-Function Pause ($Message = "Press any key to continue . . . ") {
-    Write-Host -NoNewline $Message
-    [void][System.Console]::ReadKey($true)
-    Write-Host
-}
-
-New-Alias -Name "WC" -Value "New-Object System.Net.WebClient"
-
-$folder = "$env:tmp\mhddos-temp"
-
-function Add-AddonsFolder {
-    param (
-        [string]$fldr
+# global variables
+if ((Get-WmiObject win32_operatingsystem).osarchitecture -like "*64*") {$64bit = $true} else {$64bit = $false}
+$WebClient = New-Object System.Net.WebClient
+$_dir = "$env:tmp\mhddos-temp"
+$_mkdir = if (!(Test-Path "$_dir")) {New-Item -Path "$_dir" -Type "Directory" -Force}
+function Get-LinksVar {
+    param ([string]$VarName)
+    $s = @(
+        "https://github.com/porthole-ascend-cinnamon/mhddos_proxy/archive/refs/heads/main.zip",
+        "https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/.vcr",
+        "https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7za.exe",
+        "https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-amd64.zip",
+        "https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-win32.zip",
+        "https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-amd64.zip",
+        "https://www.python.org/ftp/python/3.10.4/python-3.10.4-embed-win32.zip"
     )
-    New-Item -Path "$fldr\addons" -Type Folder
-    WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.dll","$fldr\addons\7z.dll")
-    WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7z.exe","$fldr\addons\7z.exe")
-    WC.DownloadFile("https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/vcr.zip","$fldr\addons\vcr.zip")
+    if ([System.Environment]::OSVersion.Version.Major -lt 10) {if ($64bit) {$py = $s[3]} else {$py += $s[4]}} else {if ($64bit) {$py += $s[5]} else {$py += $s[6]}}
+    $i = $s[0,1,2] + $py
+    New-Variable -Name "$VarName" -Value $i -Scope "Script"
 }
-function Set-VCR {
-    param (
-        [string]$fldr
-    )
-    if (!(Test-Path -Path "$fldr\addons")) {
-        if (!(Test-Path -Path "$fldr")) {New-Item -Path "$fldr" -Type Folder}
-        Add-AddonsFolder "$fldr"
-    }
-    Start-Process -FilePath "$fldr\addons\7z.exe" -ArgumentList "e -y "-pwz" "$fldr\addons\vcr.zip""
+#   ---------------------------------------------------------------------------------------------------------------------
+Get-LinksVar "_l"
+
+if (!(Test-Path "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0")) {
+    $_mkdir
+    Write-Output "// Downloading Microsoft Visual C++ Redistributable Package . . ."; $WebClient.DownloadFile("$($_l[1])","$_dir\vcr.exe")
+    Write-Output "// Installing . . ."; Start-Process -FilePath "$_dir\vcr.exe" -Wait -ArgumentList "/S"
+    Write-Output "// Done!"; Pause
 }
-# -----------------------------------------------------------
-# Set-VCR "$folder"
-Write-Output "Press Enter" ; [void][Console]::ReadKey($true).Key
-Pause
+if (!(Test-Path "$_dir\py")) {
+    $_mkdir
+    $WebClient.DownloadFile("$($_l[2])","$_dir\7za.exe"); $WebClient.DownloadFile("$($_l[3])","$_dir\py.zip")
+    Start-Process -FilePath "$_dir\7za.exe" -Wait -ArgumentList "x -y `"$_dir\py.zip`" -opy" > $null
+    $env:Path += ";$_dir\py\python.exe"
+}
+
+# python -m pip install --upgrade pip
+
+[void][System.Console]::ReadKey($true)
+python --version
+[void][System.Console]::ReadKey($true)
 exit
 
 <#
-Write-Output "Shutdown PC after program exit? ` [Enter], [Y] - Yes" ; $keys = [Console]::ReadKey($true).Key
-if ($keys -eq "Y" -or $keys -eq "Enter") {$Shutdown = $true} else {$Shutdown = $false}
-if ($key -eq "Y" -or $key -eq "Enter") {
 $now = (get-date) ; $future = (get-date).AddSeconds($time)
-Write-Output "Job start: $now" ` "Job end: $future" ; Start-Sleep -s $time
+Write-Output "Job start: $now" ` "Job end: $future"
 if ($Shutdown -eq $true) {Stop-Computer -ComputerName localhost}
-}
-
-
-
-
 #>
