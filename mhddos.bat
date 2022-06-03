@@ -18,6 +18,7 @@ if %_PWSH% LSS 3 call:PWSHsetup
 :: 
 :: echo OS - %_OS% ; .NET - %_NET% ; PWSH - %_PWSH%.0
 :: pause
+:: goto:end
 :: 
 
 :: Get command from ps1 on server
@@ -44,12 +45,12 @@ exit
 ::
 
 :: [>---- Temp folder ----<]
-:mkdir-temp
+:mkdir_temp
 set "folder=%TMP%\mhddos-temp"
 if not exist "%folder%" mkdir "%folder%"
 exit /b 0
 
-:del-temp
+:del_temp
 if exist "%folder%" rd /s /q "%folder%"
 exit /b 0
 
@@ -72,7 +73,7 @@ exit /b 0
 :.NETsetup
 echo ^(!^) // Missing .NET Framework 4.5+ ^(Your version is %_NET%^)
 pause
-call:mkdir-temp
+call:mkdir_temp
 :.NETsetup_download
 call:.NETsetup_WebClient
 :: Retry connection
@@ -99,7 +100,7 @@ cls
 echo ^(!^) // Missing ^Powershell 3.0+ ^(Your version is %_PWSH%.0^)
 echo ^(!^) // After the installation restart required
 pause
-call:mkdir-temp
+call:mkdir_temp
 :PWSHsetup_download
 if %PROCESSOR_ARCHITECTURE% EQU x86 ( call:PWSHsetup_WebClient_x86 ) else ( call:PWSHsetup_WebClient )
 :: Retry connection
