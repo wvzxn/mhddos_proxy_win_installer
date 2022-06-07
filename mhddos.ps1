@@ -11,61 +11,117 @@ add-type @"
 "@
 [Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-
 #   global variables
 $WebClient = New-Object System.Net.WebClient
-$_dir = "$env:tmp\mhddos-temp"
-$_mkdir = if (!(Test-Path "$_dir")) {New-Item -Path "$_dir" -Type "Directory" -Force > $null}
-function Set-UrlVar ($VarName) {
+$_d = "$env:USERPROFILE\_"
+#   ---------------------------------------------------------------------------------------------------------------------
+function Set-Pause {Write-Host -NoNewline "Press any key to continue . . . "; [void][System.Console]::ReadKey($true); Write-Host}
+function Set-urlTable ($VarName) {
     if ((Get-WmiObject win32_operatingsystem).osarchitecture -like "*64*") {$64bit = $true} else {$64bit = $false}
     $s = @{
         "mhddos_proxy" = "https://github.com/porthole-ascend-cinnamon/mhddos_proxy/archive/refs/heads/main.zip"
         "vcr" = "https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/.vcr"
         "7za" = "https://github.com/wvzxn/mhddos-proxy-py/raw/main/addons/7za.exe"
         "py" = ""
-        "py_x64" = "https://globalcdn.nuget.org/packages/python.3.8.10.nupkg"
-        "py_x86" = "https://globalcdn.nuget.org/packages/pythonx86.3.8.10.nupkg"
-        "py_w10x64" = "https://globalcdn.nuget.org/packages/python.3.10.4.nupkg"
-        "py_w10x86" = "https://globalcdn.nuget.org/packages/pythonx86.3.10.4.nupkg"
+        "py_x64" = "https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe"
+        "py_x86" = "https://www.python.org/ftp/python/3.8.10/python-3.8.10.exe"
+        "py_w10x64" = "https://www.python.org/ftp/python/3.10.5/python-3.10.5-amd64.exe"
+        "py_w10x86" = "https://www.python.org/ftp/python/3.10.5/python-3.10.5.exe"
+        "git" = ""
+        "git_x64" = "https://github.com/git-for-windows/git/releases/download/v2.36.1.windows.1/PortableGit-2.36.1-64-bit.7z.exe"
+        "git_x86" = "https://github.com/git-for-windows/git/releases/download/v2.36.1.windows.1/PortableGit-2.36.1-32-bit.7z.exe"
+        "updatepack7r2" = "https://update7.simplix.info/UpdatePack7R2.exe"
     }
-    if ([System.Environment]::OSVersion.Version.Major -lt 10) {
-        if ($64bit) {$s."py" = "$($s."py_x64")"} else {$s."py" = "$($s."py_x86")"}
-    } else {if ($64bit) {$s."py" = "$($s."py_w10x64")"} else {$s."py" = "$($s."py_w10x86")"}}
+    $_os = [System.Environment]::OSVersion.Version.Major
+    if ($64bit) {
+        if ($_os -lt 10) {$s."py" = "$($s."py_x64")"} else {$s."py" = "$($s."py_w10x64")"}
+        $s."git" = "$($s."git_x64")"
+    } else {
+        if ($_os -lt 10) {$s."py" = "$($s."py_x86")"} else {$s."py" = "$($s."py_w10x86")"}
+        $s."git" = "$($s."git_x86")"
+    }
     foreach ($i in $s.Keys.Split()) {if ("$i" -like "py_*") {$s.Remove("$i")}}
     New-Variable -Name "$VarName" -Value $s -Scope "Script"
 }
-
 #   ---------------------------------------------------------------------------------------------------------------------
-Set-UrlVar "_l"
-
+if (!(Test-Path "$_d")) {New-Item -Path "$_d" -Type "Directory" -Force > $null}
+Set-urlTable "_l"
 if (!(Test-Path "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0")) {
-    $_mkdir
-    Write-Output "// Downloading Microsoft Visual C++ Redistributable Package . . ."; $WebClient.DownloadFile("$($_l.'vcr')","$_dir\vcr.exe")
-    Write-Output "// Installing . . ."; Start-Process -FilePath "$_dir\vcr.exe" -Wait -ArgumentList "/S"
-    Write-Output "// Done!"; Remove-Item -Path "$_dir\vcr.exe" -Force
+    Clear-Host
+    Write-Output "(!) // Missing latest Microsoft Visual C++ Redistributable Package"
+    Set-Pause
+    Write-Output "// Downloading Microsoft Visual C++ Redistributable Package . . ."
+    $WebClient.DownloadFile("$($_l.'vcr')","$_d\vcr.exe")
+    Write-Output "// Installing . . ."
+    Start-Process -FilePath "$_d\vcr.exe" -Wait -ArgumentList "/S"
+    Write-Output "// Done!"
+    Start-Sleep -s 1
+    Remove-Item -Path "$_d\vcr.exe" -Force
 }
-if (!($env:Path -like "*python*")) {
-    if (!(Test-Path "$_dir\py")) {
-        $_mkdir; $WebClient.DownloadFile("$($_l.'7za')","$_dir\7za.exe"); $WebClient.DownloadFile("$($_l.'py')","$_dir\py.nupkg")
-        Start-Process -FilePath "$_dir\7za.exe" -Wait -ArgumentList "x -y `"$_dir\py.nupkg`" -o`"$_dir\py`"" > $null
-        Remove-Item -Path "$_dir\py.nupkg" -Force
+if ($env:Path -notlike '*Git\cmd*') {
+    if (!(Test-Path "$_d\Git")) {
+        Clear-Host
+        Write-Output "(!) // Missing Git"
+        Set-Pause
+        Write-Output "// Downloading Git . . ."
+        $WebClient.DownloadFile("$($_l.'7za')","$_d\7za.exe")
+        $WebClient.DownloadFile("$($_l.'git')","$_d\git.exe")
+        Write-Output "// Installing . . ."
+        Start-Process -FilePath "$_d\7za.exe" -Wait -ArgumentList "x -y `"$_d\git.exe`" -o`"$_d\Git`"" -WindowStyle Hidden
+        Write-Output "// Done!"
+        Start-Sleep -s 1
+        Remove-Item -Path "$_d\git.exe" -Force
     }
-    $env:Path = $env:Path.TrimStart(" ",";").TrimEnd(" ",";") + ";$_dir\py\tools;\$_dir\py\tools\Scripts;"
+    $env:Path = $env:Path.TrimStart(" ",";").TrimEnd(" ",";") + ";$_d\Git\cmd;"
+}
+if ($env:Path -notlike '*python*' -or $env:Path -notlike '*\py\Scripts*') {
+    if (Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\python.exe") {Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\python.exe" -Force}
+    if (Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\python3.exe") {Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\python3.exe" -Force}
+    if (!(Test-Path "$_d\py")) {
+        $_w7sp1 = Select-String -Path "$env:TMP\Python*.log" -Pattern 'e000: Detected Windows 7 SP1 without'
+        Remove-Item -Path "$env:TMP\Python*.log" -Force
+        if ($_w7sp1) {
+            Write-Output "(!) // Missing Windows 7 SP1 Updates"
+            Write-Output "// Download and install UpdatePack7R2?    [Enter], [Y] - Yes"
+            $_key = [Console]::ReadKey($true).Key
+            if ($_key -eq "Y" -or $_key -eq "Enter") {
+                Write-Output "// Downloading UpdatePack7R2 . . ."
+                $WebClient.DownloadFile("$($_l.'updatepack7r2')","$_d\up7r2.exe")
+                Start-Process -FilePath "$_d\up7r2.exe" -Wait
+                Write-Output "// Installing . . ."
+                Start-Process -FilePath "$_d\UpdatePack7R2*.exe" -Wait -ArgumentList "/S"
+                Write-Output "// Restart required, please save your work"
+                Set-Pause
+                Restart-Computer -Delay 5 -Force
+            } else {exit}
+        }
+        Clear-Host
+        Write-Output "(!) // Missing Python"
+        Set-Pause
+        Write-Output "// Downloading Python . . ."
+        $WebClient.DownloadFile("$($_l.'py')","$_d\py.exe")
+        Write-Output "// Installing . . ."
+        Start-Process -FilePath "$_d\py.exe" -Wait -ArgumentList "/quiet InstallAllUsers=0 TargetDir=$_d\py PrependPath=1 Include_test=0 Include_doc=0 Include_launcher=0 Include_tcltk=0 Shortcuts=0"
+        Write-Output "// Done!"
+        Start-Sleep -s 1
+        Remove-Item -Path "$_d\py.exe" -Force
+    }
+    $env:Path = $env:Path.TrimStart(" ",";").TrimEnd(" ",";") + ";$_d\py;\$_d\py\Scripts;"
+    # Set-Env "$_d\py","\$_d\py\Scripts"
+    # Start-Process -FilePath "$PSScriptRoot\mhddos.bat" -Wait -Verb runAs; exit
+}
+if (!(Test-Path "$_d\mhddos_proxy")) {
+    git version
 }
 
-# "\Git\bin\sh.exe" --login -i -c "/c/GitRepo/PythonScripts/script.sh"
-[void][System.Console]::ReadKey($true)
-<#
-if (!(Test-Path "$_dir\mhddos_proxy")) {
-    $_mkdir
-    $WebClient.DownloadFile("$($_l[1])","$_dir\vcr.exe")
-    Write-Output "// Installing . . ."; Start-Process -FilePath "$_dir\vcr.exe" -Wait -ArgumentList "/S"
-    Write-Output "// Done!"; Remove-Item -Path "$_dir\vcr.exe" -Force
-}
-#>
+# Set-Location "$_d\mhddos_proxy"
+#   ---------------------------------------------------------------------------------------------------------------------
 python --version
 # python -m pip install --upgrade pip
-[void][System.Console]::ReadKey($true)
+# python -m pip install -r requirements.txt
+# Invoke-Expression $WebClient.DownloadString('https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/script.sh')
+# "\Git\bin\sh.exe" --login -i -c "/c/GitRepo/PythonScripts/script.sh"
+Set-Pause
 exit
 
 <#
