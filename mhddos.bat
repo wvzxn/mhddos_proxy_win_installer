@@ -10,7 +10,7 @@ call:PWSHver
 if %_NET_short:.=% LSS 45 goto:OSupdate
 if %_PWSH% LSS 3 goto:OSupdate
 :ps1
-start "mhddos_proxy" powershell -executionpolicy bypass -noexit -command "%_PS1_COMMAND%"
+start "mhddos_proxy" powershell -executionpolicy bypass -command "%_PS1_COMMAND%"
 :end
 exit
 
