@@ -21,22 +21,10 @@ public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
 
 #   ---- functions ----
 function Set-Pause {Write-Host -NoNewline "Press any key to continue . . . "; [void][System.Console]::ReadKey($true); Write-Host}
-function Set-Console ($Type) {
-    $consolePtr = [Console.Window]::GetConsoleWindow()
-    [Console.Window]::ShowWindow($consolePtr, $Type)
-    # Hide = 0,
-    # ShowNormal = 1,
-    # ShowMinimized = 2,
-    # ShowMaximized = 3,
-    # Maximize = 3,
-    # ShowNormalNoActivate = 4,
-    # Show = 5,
-    # Minimize = 6,
-    # ShowMinNoActivate = 7,
-    # ShowNoActivate = 8,
-    # Restore = 9,
-    # ShowDefault = 10,
-    # ForceMinimized = 11
+function Invoke-CtrlC ($Repeat) {
+    [void][System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')
+    if ($Repeat) {$a = $Repeat} else {$a = 1}
+    for ($i = 0; $i -lt $a; $i++) {[System.Windows.Forms.SendKeys]::SendWait("^{c}"); Start-Sleep -m 500}
 }
 function Set-Shortcut ($Target,$Path,$Name,$Arguments) {
     $ws = New-Object -comObject WScript.Shell
@@ -52,8 +40,8 @@ function Write-Spaces4Center ($StringArray) {
 }
 function Write-Intro ($a) {
     if ($a.vcr) {$vc = "yes"} else {$vc = "no "}
-    if ($a.git -eq "local") {$gt = "yes"}; if ($a.git) {$gt = "yes"} else {$gt = "no "}
-    if ($a.py -eq "local") {$py = "yes"}; if ($a.py) {$py = "yes"} else {$py = "no "}
+    if ("$($a.git)" -eq "local" -or "$($a.git)" -eq "dir") {$gt = "yes"} else {$gt = "no "}
+    if ("$($a.py)" -eq "local" -or "$($a.py)" -eq "dir") {$py = "yes"} else {$py = "no "}
     if ($a.mhddos) {$md = "yes"} else {$md = "no "}
     Write-Host ('=' * $Host.UI.RawUI.BufferSize.Width)
     Write-Spaces4Center "mhddos_proxy_win_installer"," by ","wvzxn"
@@ -84,11 +72,9 @@ function Get-Tools {
     param($Path,$urlTable,[switch]$Install)
     $WebClient = New-Object System.Net.WebClient
     $a = [PSCustomObject]@{"vcr" = ""; "git" = ""; "py" = ""; "mhddos" = ""}
-    if (Test-Path "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0") {$vcr = $true}; $a.vcr = "$vcr"
-    if ($env:Path -like '*Git\cmd*') {$git_local = $true} else {if (Test-Path "$Path\Git") {$git = $true}}
-    if ($git_local) {$a.git = "local"} else {if ($git) {$a.git = $true}}
-    if ($env:Path -like '*python*') {$py_local = $true} else {if (Test-Path "$Path\py") {$py = $true}}
-    if ($py_local) {$a.py = "local"} else {if ($py) {$a.py = $true}}
+    if (Test-Path "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0") {$a.vcr = $true}
+    if ($env:Path -like '*\Git\cmd*') {$a.git = "local"} else {if (Test-Path "$Path\Git") {$a.git = "dir"}}
+    if ($env:Path -like '*python*') {$a.py = "local"} else {if (Test-Path "$Path\py") {$a.py = "dir"}}
     if (Test-Path "$Path\mhddos_proxy") {$a.mhddos = $true}
     if ($Install) {
         if (!$urlTable) {return "missing urlTable"}
@@ -98,11 +84,9 @@ function Get-Tools {
             Start-Process -FilePath "$Path\vcr.exe" -Verb runAs -Wait -ArgumentList "/S"
             Remove-Item -Path "$Path\vcr.exe" -Force
         }
-        if ($a.git -eq "local") {
-            echo "local"
-            $_gitPath = "$env:ProgramFiles\Git"
+        if ("$($a.git)" -eq "local") {
             $_env = [Environment]::GetEnvironmentVariables("Machine").Path.TrimStart(" ",";").TrimEnd(" ",";") -split ";"
-            foreach ($i in $_env) {if ($i -like "*Git\cmd*") {$_gitPath = $i.Replace("\cmd","\bin")}}
+            foreach ($i in $_env) {if ("$i" -like "*Git\cmd*") {$_gitPath = $i.Replace("\cmd","\bin")}}
         } else {
             if (!$a.git) {
                 if (!(Test-Path "$Path\7za.exe")) {$WebClient.DownloadFile("$($urlTable.'7za')","$Path\7za.exe")}
@@ -112,7 +96,8 @@ function Get-Tools {
             }
             $_gitPath = "$Path\Git\bin"
         }
-        if ($a.py -ne "local") {
+        $env:Path = $env:Path.TrimStart(" ",";").TrimEnd(" ",";") + ";" + "$_gitPath" + ";"
+        if ("$($a.py)" -ne "local") {
             if (!$a.py) {
                 if (!(Test-Path "$Path\7za.exe")) {$WebClient.DownloadFile("$($urlTable.'7za')","$Path\7za.exe")}
                 $WebClient.DownloadFile("$($urltable.'py')","$Path\py.nupkg")
@@ -120,20 +105,13 @@ function Get-Tools {
                 Remove-Item -Path "$Path\py.nupkg" -Force
             }
             $_pyPath = "$Path\py\tools;\$Path\py\tools\Scripts"
+            $env:Path = $env:Path.TrimStart(" ",";").TrimEnd(" ",";") + ";" + "$_pyPath" + ";"
         }
-
-        if (!$_pyPath) {$env:Path = $env:Path.TrimStart(" ",";").TrimEnd(" ",";") + ";" + "$_gitPath" + ";"} else {
-            $env:Path = $env:Path.TrimStart(" ",";").TrimEnd(" ",";") + ";" + "$_gitPath" + ";" + "$_pyPath" + ";"
-        }
-
         if (Test-Path "$Path\7za.exe") {Remove-Item -Path "$Path\7za.exe" -Force}
-        if (!$a.mhddos) {
-            Set-Location "$Path"
-            git clone $l.mhddos_proxy
-            python -m pip install --upgrade pip
-            Set-Location "$Path\mhddos_proxy"
-            python -m pip install -r requirements.txt
-        }
+        if (!$a.mhddos) {Set-Location "$Path"; git clone $l.mhddos_proxy}
+        python -m pip install --upgrade pip
+        Set-Location "$Path\mhddos_proxy"
+        python -m pip install -r requirements.txt
     } else {return $a}
 }
 #   ---- [--------] ----
@@ -178,13 +156,11 @@ if ($start_arg -like "*/s *") {
         Invoke-Expression "$c $_start_cmd"
     } else {
         $_start_time = $_settings.StartTime
-        $now = (get-date); $future = $now.AddSeconds($time)
+        $now = (get-date); $future = $now.AddSeconds($_start_time)
         Write-Host "Job start: $now | Job end: $future"; Start-Sleep -s 3
-        Set-Console 6 > $null
-        if ($start_arg -like "*/min*") {
-            $_process = Start-Process powershell -WindowStyle Minimized -PassThru -ArgumentList "-NoExit","-ExecutionPolicy Bypass","-Command","`$env:Path = `'$env:Path`'; Invoke-Expression '$c $_start_cmd'"
-        } else {$_process = Start-Process powershell -PassThru -ArgumentList "-NoExit","-ExecutionPolicy Bypass","-Command","`$env:Path = `'$env:Path`'; Invoke-Expression '$c $_start_cmd'"}
-        Start-Sleep -s $_start_time; $_process | Stop-Process
+        $_sb = {Start-Sleep -s $_start_time; Get-Process -Name 'bash','python','sh','sleep' | Stop-Process -Force}
+        Start-Job -ScriptBlock $_sb > $null
+        Invoke-Expression "$c $_c"
         if ($_settings.StartStdn) {Stop-Computer -ComputerName localhost -Force}
     }
     exit
@@ -193,10 +169,8 @@ if ($start_arg -like "*/s *") {
 
 #   ---- [MENU] ----
 do {
-    write-host $env:Path
     $_tools = Get-Tools "$d"
-    write-host $env:Path
-    # Clear-Host
+    Clear-Host
     Write-Intro $_tools
     $kkk = [System.Console]::ReadKey($true).Key
     switch ($kkk) {
@@ -205,10 +179,7 @@ do {
         #   ---- [runner] ----
         Clear-Host
         Write-Host "Setting up tools..."
-        write-host $env:Path
         Get-Tools -Path "$d" -urlTable $l -Install
-        write-host $env:Path
-        Set-Pause
         Clear-Host
 
         Write-Host "Last session: " -NoNewline
@@ -246,17 +217,17 @@ do {
 
         Clear-Host
         if (!$_t) {
-            Write-Host "$env:Path"
             Invoke-Expression "$c $_c"
         } else {
-            $now = (get-date); $future = $now.AddSeconds($time)
+            $now = (get-date); $future = $now.AddSeconds($_t)
             Write-Host "Job start: $now | Job end: $future"; Start-Sleep -s 3
-            Set-Console 6 > $null
-            $_process = Start-Process powershell -PassThru -ArgumentList "-NoExit","-ExecutionPolicy Bypass","-Command","`$env:Path = `'$env:Path`'; Write-Host `"`$env:Path`"; Invoke-Expression '$c $_c'"
-            Start-Sleep -s $_t; $_process | Stop-Process
+            # if ([environment]::OSVersion.Version.Major -lt 10) {}
+            $_sb = {Start-Sleep -s $_t; Get-Process -Name 'bash','python','sh','sleep' | Stop-Process -Force}
+            Start-Job -ScriptBlock $_sb > $null
+            Invoke-Expression "$c $_c"
             if ($_stdn) {Stop-Computer -ComputerName localhost -Force}
         }
-        exit
+        break
         #   ---- [------------] ----
 
     } {"D2","S" -eq $_} {
