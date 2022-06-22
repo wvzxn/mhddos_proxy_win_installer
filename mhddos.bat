@@ -1,6 +1,7 @@
 @echo off
-set "_PS1_COMMAND=[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; cls; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/mhddos.ps1'))"
-:: set "_PS1_COMMAND=& '%~dp0mhddos.ps1'"
+set "_localornot=[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; cls; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wvzxn/mhddos-proxy-py/main/mhddos.ps1'))"
+:: set "_localornot=& '%~dp0mhddos.ps1'"
+set "_PS1_COMMAND=$bat_name = '%~n0'; $bat_path = '%0'; $start_arg = '%*'; %_localornot%"
 
 :start
 call:OSver
