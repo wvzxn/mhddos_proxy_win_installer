@@ -21,10 +21,22 @@ public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
 
 #   ---- functions ----
 function Set-Pause {Write-Host -NoNewline "Press any key to continue . . . "; [void][System.Console]::ReadKey($true); Write-Host}
-function Invoke-CtrlC ($Repeat) {
-    [void][System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')
-    if ($Repeat) {$a = $Repeat} else {$a = 1}
-    for ($i = 0; $i -lt $a; $i++) {[System.Windows.Forms.SendKeys]::SendWait("^{c}"); Start-Sleep -m 500}
+function Set-Console ($Type) {
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    [Console.Window]::ShowWindow($consolePtr, $Type)
+    # Hide = 0,
+    # ShowNormal = 1,
+    # ShowMinimized = 2,
+    # ShowMaximized = 3,
+    # Maximize = 3,
+    # ShowNormalNoActivate = 4,
+    # Show = 5,
+    # Minimize = 6,
+    # ShowMinNoActivate = 7,
+    # ShowNoActivate = 8,
+    # Restore = 9,
+    # ShowDefault = 10,
+    # ForceMinimized = 11
 }
 function Set-Shortcut ($Target,$Path,$Name,$Arguments) {
     $ws = New-Object -comObject WScript.Shell
@@ -158,9 +170,9 @@ if ($start_arg -like "*/s *") {
         $_start_time = $_settings.StartTime
         $now = (get-date); $future = $now.AddSeconds($_start_time)
         Write-Host "Job start: $now | Job end: $future"; Start-Sleep -s 3
-        $_sb = {Start-Sleep -s $_start_time; Get-Process -Name 'bash','python','sh','sleep' | Stop-Process -Force}
-        Start-Job -ScriptBlock $_sb > $null
-        Invoke-Expression "$c $_c"
+        if ($start_arg -like "*/min*") {
+            Start-Process powershell -WindowStyle Minimized -ArgumentList "-ExecutionPolicy Bypass","-Command","`$env:Path = `'$env:Path`'; Invoke-Expression '$c $_start_cmd'"
+        } else {Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass","-Command","`$env:Path = `'$env:Path`'; Invoke-Expression '$c $_start_cmd'"}
         if ($_settings.StartStdn) {Stop-Computer -ComputerName localhost -Force}
     }
     exit
@@ -221,12 +233,14 @@ do {
         } else {
             $now = (get-date); $future = $now.AddSeconds($_t)
             Write-Host "Job start: $now | Job end: $future"; Start-Sleep -s 3
-            # if ([environment]::OSVersion.Version.Major -lt 10) {}
-            $_sb = {Start-Sleep -s $_t; Get-Process -Name 'bash','python','sh','sleep' | Stop-Process -Force}
-            Start-Job -ScriptBlock $_sb > $null
-            Invoke-Expression "$c $_c"
-            if ($_stdn) {Stop-Computer -ComputerName localhost -Force}
+            Set-Console 6 > $null
+            Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass","-Command","`$env:Path = `'$env:Path`'; Invoke-Expression '$c $_c'"
+            Start-Sleep -s $_t; Get-Process -Name 'bash','python','sh','sleep' | Stop-Process -Force
+            if ($_stdn) {Stop-Computer -ComputerName localhost -Force; exit}
         }
+        $_nn = Get-Date -Format t
+        Write-Host "$_nn`: Done!"
+        Set-Pause
         break
         #   ---- [------------] ----
 
