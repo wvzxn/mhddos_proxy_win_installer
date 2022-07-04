@@ -270,7 +270,7 @@ do {
                 Write-Host " | $($_settings.StartTime)s | Shutdown: " -NoNewline
                 if ($_settings.StartStdn) {Write-Host "yes"} else {Write-Host "no"}
             } else {Write-Host}
-            Remove-Item "$local_startup\*$bat_name*" -Force
+            Remove-Item "$local_startup\*$bat_name*" -Force -Recurse
         }
 
         # startup task not found
@@ -300,16 +300,20 @@ do {
         }
         $_j = ConvertTo-Json $_settings
         Set-Content -Path "$d\settings.json" -Value "$_j"
-
+        $_arg = "/s "
         # prompt for minimize
         Write-Host "Minimize startup script window?   [Y] - Yes"
         $key25 = [System.Console]::ReadKey($true).Key
-        if ($key25 -eq "Y") {$_args += "/min"}
-        Set-Shortcut -Target "$bat_path" -Path "$local_startup" -Name "$bat_name" -Arguments "$_args"
+        if ($key25 -eq "Y") {$_arg += "/min"}
+        Set-Shortcut -Target "$bat_path" -Path "$local_startup" -Name "$bat_name" -Arguments "$_arg"
         Write-Host "Done!" -NoNewline; Start-Sleep -s 2
         #   ---- [-----------] ----
 
-    } {"D3","U" -eq $_} {Remove-Item "$d" -Force -Recurse; Write-Host "Done!" -NoNewline; Start-Sleep -s 2; exit}
+    } {"D3","U" -eq $_} {
+        Remove-Item "$d" -Force -Recurse
+        Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\*$bat_name*" -Force -Recurse
+        Write-Host "Done!" -NoNewline; Start-Sleep -s 2; exit
+    }
     }
 } until ($kkk -eq "Q" -or $kkk -eq "Escape")
 #   ---- [----] ----
